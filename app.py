@@ -110,14 +110,6 @@ if raw_jedi_file and vendor_mapping_file and accounts_file:
                 mime="text/csv",
             )
 
-            if not new_mappings_df.empty:
-                new_mappings_csv = new_mappings_df.to_csv(index=False).encode("utf-8")
-                st.download_button(
-                    label="Download Only New Vendor Mappings (CSV)",
-                    data=new_mappings_csv,
-                    file_name="new_vendor_mappings.csv",
-                    mime="text/csv",
-                )
 
         except Exception as e:
             st.error(f"Error while processing files: {e}")
