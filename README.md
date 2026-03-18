@@ -3,7 +3,7 @@
 Streamlit app to process:
 - raw JEDI report
 - vendor mapping CSV
-- Accounts CSV
+- accounts CSV
 
 ## Run locally
 
