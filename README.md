@@ -1,9 +1,5 @@
-# Adaptive Cost Upload Tool
-
-Streamlit app to process:
-- raw JEDI report
-- vendor mapping CSV
-- accounts CSV
+# Adaptive Cost Upload
+# Adaptive Revenue Demand Upload
 
 ## Run locally
 
