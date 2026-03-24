@@ -246,9 +246,5 @@ elif page == "Adaptive Revenue Demand Upload":
                 st.error(f"Error while processing revenue demand files: {e}")
     else:
         st.info("Please upload all three required revenue demand files.")
-
-
-        except Exception as e:
-            st.error(f"Error while processing files: {e}")
 else:
     st.info("Please upload all three required files.")
