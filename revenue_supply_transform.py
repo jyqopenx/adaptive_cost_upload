@@ -232,7 +232,7 @@ def process_revenue_supply_files(
         return result
 
     def create_ci_df(df: pd.DataFrame, month_col: str) -> pd.DataFrame:
-        ci_df = df.iloc[:, 2:9].drop_duplicates().reset_index(drop=True)
+        ci_df = df.iloc[:, 2:9].reset_index(drop=True)
         ci_df.insert(0, "Account", "trigger")
         ci_df.insert(1, "Level Code", "OpenX Tech")
         ci_df[month_col] = 1
