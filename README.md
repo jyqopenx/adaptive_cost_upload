@@ -1,5 +1,6 @@
 # Adaptive Cost Upload
 # Adaptive Revenue Demand Upload
+# Adaptive Revenue Supply Upload
 
 ## Run locally
 
