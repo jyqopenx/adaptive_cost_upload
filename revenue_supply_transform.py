@@ -171,6 +171,7 @@ def process_revenue_supply_files(
         f"{selected_month_start.month}/{selected_month_start.day}/{selected_month_start.year}"
     )
     month_label = selected_month_start.strftime("%Y%m")
+    special_trigger_col_name = f"12/1/{selected_month_start.year}"
 
     group_cols = [
         "level",
@@ -237,9 +238,9 @@ def process_revenue_supply_files(
     mobile_web_final_df = build_final_df(supply, "mobile", "web")
     mobile_app_final_df = build_final_df(supply, "mobile", "app")
 
-    desktop_web_ci_df = create_ci_df(desktop_web_final_df, last_month_col_name)
-    mobile_web_ci_df = create_ci_df(mobile_web_final_df, last_month_col_name)
-    mobile_app_ci_df = create_ci_df(mobile_app_final_df, last_month_col_name)
+    desktop_web_ci_df = create_ci_df(desktop_web_final_df, special_trigger_col_name)
+    mobile_web_ci_df = create_ci_df(mobile_web_final_df, special_trigger_col_name)
+    mobile_app_ci_df = create_ci_df(mobile_app_final_df, special_trigger_col_name)
 
     file_specs = [
         {
@@ -313,7 +314,7 @@ def process_revenue_supply_files(
     consolidated_final_df = supply[new_group_cols].drop_duplicates().reset_index(drop=True)
     consolidated_final_df.insert(0, "Account", "trigger")
     consolidated_final_df.insert(1, "Level Code", "OpenX Tech")
-    consolidated_final_df[last_month_col_name] = 1
+    consolidated_final_df[special_trigger_col_name] = 1
 
     consolidated_final_df = consolidated_final_df.rename(
         columns={
@@ -338,7 +339,7 @@ def process_revenue_supply_files(
             "Environment Code",
             "Device_Type Code",
             "Partner 1 Code",
-            last_month_col_name,
+            special_trigger_col_name,
         ]
     ].copy()
 
@@ -407,7 +408,9 @@ def process_revenue_supply_files(
         "Publisher ID Code"
     ].replace("nan", "(blank)")
 
-    assumptions_file_2 = f"_A_07_Consolidated_-_Rev_-_Core LOAD FILE ({month_label}) - TRIGGERa.xlsx"
+    assumptions_file_2 = (
+        f"_A_07_Consolidated_-_Rev_-_Core LOAD FILE ({month_label}) - TRIGGERa.xlsx"
+    )
     assumptions_bytes_2 = build_output_workbook(
         source_instruction_ws=instructions_wb.worksheets[4],
         data_sheet_name="_A.07 Consolidated - Rev - Core",
@@ -415,6 +418,21 @@ def process_revenue_supply_files(
     )
     generated_reports[assumptions_file_2] = assumptions_bytes_2
     zip_entries.append((f"assumptions/{assumptions_file_2}", assumptions_bytes_2))
+
+    consolidated_trigger_df_extra = consolidated_trigger_df.rename(
+        columns={last_month_col_name: special_trigger_col_name}
+    ).copy()
+
+    assumptions_file_3 = (
+        f"_A_07_Consolidated_-_Rev_-_Core LOAD FILE ({month_label}) - TRIGGER.xlsx"
+    )
+    assumptions_bytes_3 = build_output_workbook(
+        source_instruction_ws=instructions_wb.worksheets[4],
+        data_sheet_name="_A.07 Consolidated - Rev - Core",
+        df=consolidated_trigger_df_extra,
+    )
+    generated_reports[assumptions_file_3] = assumptions_bytes_3
+    zip_entries.append((f"assumptions/{assumptions_file_3}", assumptions_bytes_3))
 
     unique_publishers_supply = supply[
         [
@@ -443,8 +461,6 @@ def process_revenue_supply_files(
         how="left",
     )
 
-    new_pub_ids_df["Relationship Code"] = "O&O"
-
     final_new_pub_ids_df = new_pub_ids_df.rename(
         columns={
             "sf_account_id": "Dimension Value Name",
@@ -455,11 +471,17 @@ def process_revenue_supply_files(
         }
     )
 
+    final_new_pub_ids_df["Relationship Code"] = final_new_pub_ids_df["Publisher Type"].map(
+        {
+            "Direct Publisher": "O&O",
+            "Network": "NW",
+        }
+    )
+
     final_new_pub_ids_df = final_new_pub_ids_df[
         [
             "Dimension Value Name",
             "Publisher Name",
-            "Publisher Type",
             "MRR Code",
             "MRR_Group Code",
             "Relationship Code",
@@ -534,6 +556,7 @@ def process_revenue_supply_files(
         "zip_bytes": zip_buffer.getvalue(),
         "month_label": month_label,
         "last_month_col_name": last_month_col_name,
+        "special_trigger_col_name": special_trigger_col_name,
         "new_publishers_df": final_new_pub_ids_df,
         "updated_prior_pubid_df": updated_prior_pubid_df,
         "desktop_web_final_df": desktop_web_final_df,
@@ -544,4 +567,5 @@ def process_revenue_supply_files(
         "mobile_app_ci_df": mobile_app_ci_df,
         "consolidated_final_df": consolidated_final_df,
         "consolidated_trigger_df": consolidated_trigger_df,
+        "consolidated_trigger_df_extra": consolidated_trigger_df_extra,
     }
