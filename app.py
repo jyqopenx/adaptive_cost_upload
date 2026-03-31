@@ -131,26 +131,6 @@ if page == "Adaptive Cost Upload":
                         index=False,
                     )
 
-                    updated_vendor_mapping_df.to_excel(
-                        writer,
-                        sheet_name="Updated Vendor Mapping",
-                        index=False,
-                    )
-
-                    if not new_mappings_df.empty:
-                        new_mappings_df.to_excel(
-                            writer,
-                            sheet_name="New Vendor Mappings",
-                            index=False,
-                        )
-
-                    if not remaining_add_vendor_codes.empty:
-                        remaining_add_vendor_codes.to_excel(
-                            writer,
-                            sheet_name="Unresolved Vendor Codes",
-                            index=False,
-                        )
-
                 output_buffer.seek(0)
 
                 st.download_button(
