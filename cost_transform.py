@@ -244,3 +244,10 @@ def process_cost_files(raw_jedi_file, vendor_mapping_file, accounts_file):
         "vendor_mapping": vendor_mapping,
         "jedi_report_cleaned": jedi_report_cleaned,
     }
+
+
+def save_cost_output_first_sheet_only(results, output_file):
+    with pd.ExcelWriter(output_file, engine="openpyxl") as writer:
+        results["output"].to_excel(writer, sheet_name="Cost Output", index=False)
+
+
