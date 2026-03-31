@@ -374,6 +374,3 @@ elif page == "Adaptive Revenue Supply Upload":
                 st.error(f"Error while processing revenue supply files: {e}")
     else:
         st.info("Please upload all three required revenue supply files.")
-
-    else:
-        st.info("Please upload all three required revenue supply files.")
