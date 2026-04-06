@@ -443,9 +443,33 @@ def process_revenue_supply_files(
         ]
     ].drop_duplicates().copy()
 
-    prior_pubid_list = prior_pubid["pub_id"].astype(str).tolist()
-    unique_publishers_supply["sf_account_id"] = unique_publishers_supply["sf_account_id"].astype(
-        str
+    # Clean publisher IDs early so blank/null values do not leak into the preview or current_pubids.xlsx
+    unique_publishers_supply["sf_account_id"] = (
+        unique_publishers_supply["sf_account_id"]
+        .replace(["nan", "None", "none"], pd.NA)
+        .astype("string")
+        .str.strip()
+    )
+
+    unique_publishers_supply["sf_account_name"] = (
+        unique_publishers_supply["sf_account_name"]
+        .replace(["nan", "None", "none"], pd.NA)
+        .astype("string")
+        .str.strip()
+    )
+
+    unique_publishers_supply = unique_publishers_supply[
+        unique_publishers_supply["sf_account_id"].notna()
+        & (unique_publishers_supply["sf_account_id"] != "")
+    ].copy()
+
+    prior_pubid_list = (
+        prior_pubid["pub_id"]
+        .astype("string")
+        .str.strip()
+        .dropna()
+        .loc[lambda s: s != ""]
+        .tolist()
     )
 
     new_pub_ids_df = unique_publishers_supply[
@@ -470,14 +494,14 @@ def process_revenue_supply_files(
             "MRR Group": "MRR_Group Code",
         }
     )
-    
+
     final_new_pub_ids_df["Relationship Code"] = (
-    final_new_pub_ids_df["Publisher Type"]
-    .map({
-        "Direct Publisher": "O&O",
-        "Network": "NW",
-    })
-    .fillna(final_new_pub_ids_df["Publisher Type"])
+        final_new_pub_ids_df["Publisher Type"]
+        .map({
+            "Direct Publisher": "O&O",
+            "Network": "NW",
+        })
+        .fillna(final_new_pub_ids_df["Publisher Type"])
     )
 
     final_new_pub_ids_df = final_new_pub_ids_df[
@@ -488,6 +512,19 @@ def process_revenue_supply_files(
             "MRR_Group Code",
             "Relationship Code",
         ]
+    ].copy()
+
+    # Safety filter: remove blank IDs again before adding cohort fields / exporting
+    final_new_pub_ids_df["Dimension Value Name"] = (
+        final_new_pub_ids_df["Dimension Value Name"]
+        .replace(["nan", "None", "none"], pd.NA)
+        .astype("string")
+        .str.strip()
+    )
+
+    final_new_pub_ids_df = final_new_pub_ids_df[
+        final_new_pub_ids_df["Dimension Value Name"].notna()
+        & (final_new_pub_ids_df["Dimension Value Name"] != "")
     ].copy()
 
     final_new_pub_ids_df["Monthly Total Publisher Cohort Name"] = selected_month_start.strftime(
@@ -526,7 +563,32 @@ def process_revenue_supply_files(
     new_pub_ids_to_append = final_new_pub_ids_df[["Dimension Value Name"]].rename(
         columns={"Dimension Value Name": "pub_id"}
     )
+
+    new_pub_ids_to_append["pub_id"] = (
+        new_pub_ids_to_append["pub_id"]
+        .replace(["nan", "None", "none"], pd.NA)
+        .astype("string")
+        .str.strip()
+    )
+
+    new_pub_ids_to_append = new_pub_ids_to_append[
+        new_pub_ids_to_append["pub_id"].notna()
+        & (new_pub_ids_to_append["pub_id"] != "")
+    ].copy()
+
     updated_prior_pubid_df = pd.concat([prior_pubid, new_pub_ids_to_append], ignore_index=True)
+
+    updated_prior_pubid_df["pub_id"] = (
+        updated_prior_pubid_df["pub_id"]
+        .replace(["nan", "None", "none"], pd.NA)
+        .astype("string")
+        .str.strip()
+    )
+
+    updated_prior_pubid_df = updated_prior_pubid_df[
+        updated_prior_pubid_df["pub_id"].notna()
+        & (updated_prior_pubid_df["pub_id"] != "")
+    ].drop_duplicates(subset=["pub_id"]).copy()
 
     updated_prior_pubid_wb = Workbook()
     ws_prior_1 = updated_prior_pubid_wb.active
@@ -571,3 +633,4 @@ def process_revenue_supply_files(
         "consolidated_trigger_df": consolidated_trigger_df,
         "consolidated_trigger_df_extra": consolidated_trigger_df_extra,
     }
+
