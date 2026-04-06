@@ -470,12 +470,14 @@ def process_revenue_supply_files(
             "MRR Group": "MRR_Group Code",
         }
     )
-
-    final_new_pub_ids_df["Relationship Code"] = final_new_pub_ids_df["Publisher Type"].map(
-        {
-            "Direct Publisher": "O&O",
-            "Network": "NW",
-        }
+    
+    final_new_pub_ids_df["Relationship Code"] = (
+    final_new_pub_ids_df["Publisher Type"]
+    .map({
+        "Direct Publisher": "O&O",
+        "Network": "NW",
+    })
+    .fillna(final_new_pub_ids_df["Publisher Type"])
     )
 
     final_new_pub_ids_df = final_new_pub_ids_df[
